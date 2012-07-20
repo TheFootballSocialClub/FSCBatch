@@ -1,0 +1,23 @@
+{
+    "name": "fsc/batch",
+    "description": "Library with classes to help you do batch.",
+    "keywords": ["symfony", "development", "batch", "command", "helper"],
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "The Football Social Club",
+            "email": "contact@thefootballsocialclub.com",
+            "homepage": "http://thefootballsocialclub.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.3"
+    },
+    "autoload": {
+        "psr-0": {
+            "FSC\\Batch": "src/"
+        }
+    },
+    "minimum-stability": "dev"
+}
