@@ -14,6 +14,9 @@
     "require": {
         "php": ">=5.3"
     },
+    "require-dev": {
+        "symfony/console": "2.*"
+    },
     "autoload": {
         "psr-0": {
             "FSC\\Batch": "src/"

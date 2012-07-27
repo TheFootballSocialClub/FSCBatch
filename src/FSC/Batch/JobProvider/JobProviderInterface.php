@@ -1,6 +1,6 @@
 <?php
 
-namespace FSC\Batch;
+namespace FSC\Batch\JobProvider;
 
 interface JobProviderInterface
 {
