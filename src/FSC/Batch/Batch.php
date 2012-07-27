@@ -6,7 +6,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 use FSC\Batch\JobProvider\JobProviderInterface;
 
-class JobProcessor
+class Batch
 {
     /**
      * @var JobProviderInterface
@@ -46,14 +46,14 @@ class JobProcessor
      */
     protected $output;
 
-    public function __construct(JobProviderInterface $jobProvider, $jobProcessor)
+    public function __construct(JobProviderInterface $jobProvider, $batch)
     {
-        if (!is_callable($jobProcessor)) {
-            throw new \InvalidArgumentException('The jobProcessor should be a php callable.');
+        if (!is_callable($batch)) {
+            throw new \InvalidArgumentException('The batch should be a php callable.');
         }
 
         $this->jobProvider = $jobProvider;
-        $this->jobExecutor = $jobProcessor;
+        $this->jobExecutor = $batch;
     }
 
     public function run($batchSize = 50)

@@ -2,16 +2,16 @@
 
 namespace FSC\Batch\Tests;
 
-use FSC\Batch\JobProcessor;
+use FSC\Batch\Batch;
 
-class JobProcessorTest extends \PHPUnit_Framework_TestCase
+class BatchTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @expectedException InvalidArgumentException
      */
     public function testWithWrongExecutor()
     {
-        $this->createJobProcessor($this->createJobProviderInterfaceMock(), null);
+        $this->createBatch($this->createJobProviderInterfaceMock(), null);
     }
 
     /**
@@ -24,9 +24,9 @@ class JobProcessorTest extends \PHPUnit_Framework_TestCase
             ->method('getJobsCount')
             ->will($this->returnValue(null));
 
-        $jobProcessor = $this->createJobProcessor($jobProviderMock, function () {});
+        $batch = $this->createBatch($jobProviderMock, function () {});
 
-        $jobProcessor->run();
+        $batch->run();
     }
 
     /**
@@ -46,11 +46,11 @@ class JobProcessorTest extends \PHPUnit_Framework_TestCase
                 return array_fill(0, $limit, array());
             }));
 
-        $jobProcessor = $this->createJobProcessor($jobProviderMock, function () use (&$executorCallsCount) {
+        $batch = $this->createBatch($jobProviderMock, function () use (&$executorCallsCount) {
             $executorCallsCount++;
         });
 
-        $jobProcessor->run($batchSize);
+        $batch->run($batchSize);
 
         $this->assertEquals($expectedExecutorCallsCount, $executorCallsCount);
     }
@@ -72,8 +72,8 @@ class JobProcessorTest extends \PHPUnit_Framework_TestCase
         return $this->getMock('FSC\Batch\JobProvider\JobProviderInterface');
     }
 
-    protected function createJobProcessor($jobProvider, $jobExecutor)
+    protected function createBatch($jobProvider, $jobExecutor)
     {
-        return new JobProcessor($jobProvider, $jobExecutor);
+        return new Batch($jobProvider, $jobExecutor);
     }
 }
