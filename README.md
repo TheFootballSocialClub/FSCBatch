@@ -1,6 +1,6 @@
 # FSCBatch
 
-PHP 5.3 library to help you running hude batches.
+PHP 5.3 library to help you run huge batch.
 
 ## Samples
 
