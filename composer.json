@@ -12,9 +12,7 @@
         }
     ],
     "require": {
-        "php": ">=5.3"
-    },
-    "require-dev": {
+        "php": ">=5.3",
         "symfony/console": "2.*"
     },
     "autoload": {
