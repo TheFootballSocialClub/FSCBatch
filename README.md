@@ -6,6 +6,8 @@ PHP 5.3 library to help you run huge batch.
 
 ## Examples
 
+### Simple batch
+
 ```php
 <?php
 
@@ -42,4 +44,33 @@ Batch run start. 100 jobs [Mem: 0.52 MB]
 [ 90/100] [ 90.00 %] ([Δ 0.83 sec] - [Elapsed   7 secs] - [Remaining 0.83 sec]) [Mem:  0.79 MB]
 [100/100] [100.00 %] ([Δ 0.82 sec] - [Elapsed   8 secs] - [Remaining    0 sec]) [Mem:  0.79 MB]
 Batch run end. took 0.82 sec [Mem: 0.79 MB]
+```
+
+### Doctrine ORM Batch in a symfony command
+
+This example uses the DoctrineBatch, which flush (save everything) and clears the objectManager (avoid memory problems) at the end of each batch.
+We also use a custom PagerfantaAdapter: `DoctrineBatchAdapter`, that uses range queries (id > 100 AND id < 200) instead of LIMIT/OFFSET to avoid increasing query time as the OFFSET grows.
+
+```php
+<?php
+
+use FSC\Batch\Command\BatchCommand;
+use FSC\Batch\Adapter\DoctrineBatchAdapter;
+use FSC\Batch\DoctrineBatch;
+
+class UserIndexSolrCommand extends BatchCommand
+{
+    protected function getBatch()
+    {
+        $em = $this->getContainer()->get('doctrine')->getEntityManager();
+        $qb = $em->getRepository('User')->createQueryBuilder('u');
+
+        return new DoctrineBatch($em, new DoctrineBatchAdapter($qb), array($this, 'indexUser'));
+    }
+
+    public function indexUser($user)
+    {
+        // Index this user!
+    }
+}
 ```
