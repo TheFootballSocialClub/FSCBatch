@@ -6,6 +6,9 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 use Pagerfanta\Adapter\AdapterInterface;
 
+/**
+ * @author Adrien Brault <adrien.brault@gmail.com>
+ */
 class Batch
 {
     /**
