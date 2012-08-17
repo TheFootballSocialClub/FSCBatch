@@ -133,6 +133,7 @@ class Batch
             $estimatedTotalTime = $progress == 0 ? 0.0 : $totalTime / $progress;
             $remainingTime = $estimatedTotalTime - $totalTime;
 
+            gc_collect_cycles(); // Make sure the memory get usage is "accurate"
             $mem = memory_get_usage(true) / 1000000;
 
             $countLength = strlen((string) $this->jobsCount);
