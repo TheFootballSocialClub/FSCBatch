@@ -1,5 +1,7 @@
 # FSCBatch
 
+[![Build Status](https://secure.travis-ci.org/TheFootballSocialClub/FSCBatch.png?branch=master)](http://travis-ci.org/TheFootballSocialClub/FSCBatch)
+
 PHP 5.3 library to help you run huge batch.
 
 ## Samples
