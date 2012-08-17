@@ -167,6 +167,13 @@ class Batch
         return $this->jobsCount - $this->currentJobOffset;
     }
 
+    /**
+     * Helper, to transform for example "93" to "1 mn, 33s"
+     *
+     * @param int $seconds
+     *
+     * @return string
+     */
     protected function secondsToString($seconds)
     {
         $units = array(
