@@ -4,11 +4,31 @@
 
 PHP 5.3 library to help you run huge batch.
 
-## Samples
+## Examples
 
-- [examples/array_closure.php](https://github.com/TheFootballSocialClub/FSCBatch/blob/master/examples/array_closure.php)
+```php
+<?php
 
-  ```
+use FSC\Batch\Batch;
+use Pagerfanta\Adapter\ArrayAdapter;
+use Symfony\Component\Console\Output\ConsoleOutput;
+
+$output = new ConsoleOutput();
+
+$passwords = range(1, 100);
+$hashes = array();
+
+$batch = new Batch(new ArrayAdapter($passwords), function ($context) use (&$hashes) {
+    $hashes[] = crypt($context, '$2a$10$');
+});
+
+$batch->run(10, $output);
+```
+
+Would output
+
+
+```
 $ php examples/array_closure.php
 Batch run start. 100 jobs [Mem: 0.52 MB]
 [ 10/100] [ 10.00 %] ([Δ 0.83 sec] - [Elapsed 0.83 sec] - [Remaining   7 secs]) [Mem:  0.52 MB]

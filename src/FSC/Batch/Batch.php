@@ -77,10 +77,15 @@ class Batch
             $limit = min($batchSize, $this->getRemainingJobsCount());
             $contexts = $this->adapter->getSlice($this->currentJobOffset, $limit);
 
-            foreach ($contexts as $context) {
-                call_user_func($this->callback, $context);
+            if (is_array($contexts) || $contexts instanceof \Traversable) {
+                foreach ($contexts as $context) {
+                    call_user_func($this->callback, $context);
 
-                $this->currentJobOffset++;
+                    $this->currentJobOffset++;
+                }
+            } else {
+                // End the batch.
+                $this->currentJobOffset = $this->jobsCount;
             }
 
             $this->onBatchEnd();
