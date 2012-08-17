@@ -62,13 +62,14 @@ class Batch
         $this->defaultBatchSize = $defaultBatchSize;
     }
 
-    public function run($batchSize = null)
+    public function run($batchSize = null, OutputInterface $output = null)
     {
         $this->onRunStart();
 
         if (null === $batchSize) {
             $batchSize = $this->defaultBatchSize;
         }
+        $this->output = $output;
 
         while ($this->currentJobOffset < $this->jobsCount) {
             $this->onBatchStart();
@@ -86,9 +87,6 @@ class Batch
         }
 
         $this->onRunEnd();
-
-        $this->jobsCount = null;
-        $this->currentJobOffset = 0;
     }
 
     protected function onRunStart()
@@ -156,6 +154,11 @@ class Batch
                 memory_get_usage(true) / 1000000
             ));
         }
+
+        // Reset the state
+        $this->jobsCount = null;
+        $this->currentJobOffset = 0;
+        $this->output = null;
     }
 
     protected function getRemainingJobsCount()
@@ -222,21 +225,5 @@ class Batch
     public function getLastBatchDuration()
     {
         return $this->lastBatchDuration;
-    }
-
-    /**
-     * @param OutputInterface $output
-     */
-    public function setOutput($output)
-    {
-        $this->output = $output;
-    }
-
-    /**
-     * @return OutputInterface
-     */
-    public function getOutput()
-    {
-        return $this->output;
     }
 }

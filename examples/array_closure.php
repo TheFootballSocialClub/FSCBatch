@@ -13,6 +13,5 @@ $hashes = array();
 $batch = new Batch(new ArrayAdapter(range(1, 100)), function ($context) use (&$hashes) {
     $hashes[] = crypt($context, '$2a$10$');
 });
-$batch->setOutput($output);
 
-$batch->run(10);
+$batch->run(10, $output);
