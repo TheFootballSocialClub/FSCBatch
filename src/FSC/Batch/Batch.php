@@ -54,7 +54,7 @@ class Batch
     public function __construct(AdapterInterface $adapter, $callback, $defaultBatchSize = 50)
     {
         if (!is_callable($callback)) {
-            throw new \InvalidArgumentException('The batch should be a php callable.');
+            throw new \InvalidArgumentException('The callback should be a php callable.');
         }
 
         $this->adapter = $adapter;
