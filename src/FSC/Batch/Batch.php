@@ -16,7 +16,12 @@ class Batch
     /**
      * @var callable
      */
-    protected $jobExecutor;
+    protected $callback;
+
+    /**
+     * @var int
+     */
+    protected $defaultBatchSize;
 
     protected $jobsCount;
     protected $currentJobOffset;
@@ -46,41 +51,33 @@ class Batch
      */
     protected $output;
 
-    public function __construct(AdapterInterface $adapter, $batch)
+    public function __construct(AdapterInterface $adapter, $callback, $defaultBatchSize = 50)
     {
-        if (!is_callable($batch)) {
+        if (!is_callable($callback)) {
             throw new \InvalidArgumentException('The batch should be a php callable.');
         }
 
         $this->adapter = $adapter;
-        $this->jobExecutor = $batch;
+        $this->callback = $callback;
+        $this->defaultBatchSize = $defaultBatchSize;
     }
 
-    public function run($batchSize = 50)
+    public function run($batchSize = null)
     {
         $this->onRunStart();
+
+        if (null === $batchSize) {
+            $batchSize = $this->defaultBatchSize;
+        }
 
         while ($this->currentJobOffset < $this->jobsCount) {
             $this->onBatchStart();
 
             $limit = min($batchSize, $this->getRemainingJobsCount());
             $contexts = $this->adapter->getSlice($this->currentJobOffset, $limit);
-            $contextsCount = count($contexts);
-
-            if ($contextsCount > $batchSize) {
-                throw new \RuntimeException(sprintf('The JobProvider getJobsContexts() method should return less than "%d" contexts.', $batchSize));
-            }
-
-            if (1 > $contextsCount) {
-                throw new \RuntimeException('The JobProvider getJobsContexts() method should return at least one context');
-            }
-
-            if ($contextsCount > $this->getRemainingJobsCount()) {
-                throw new \RuntimeException(sprintf('The JobProvider getJobsContexts() method returned %d contexts, but there should only have %d left to do.', $contextsCount, $this->jobsCount - $this->currentJobOffset));
-            }
 
             foreach ($contexts as $context) {
-                call_user_func($this->jobExecutor, $context);
+                call_user_func($this->callback, $context);
 
                 $this->currentJobOffset++;
             }
@@ -153,11 +150,10 @@ class Batch
     {
         if (null !== $this->output) {
             $totalTime = microtime(true) - $this->currentBatchStartTime;
-            $mem = memory_get_usage(true) / 1000000;
 
             $this->output->writeln(sprintf('Batch run end. took %s [Mem: %.2f MB]',
                 $this->secondsToString($totalTime),
-                $mem
+                memory_get_usage(true) / 1000000
             ));
         }
     }
@@ -207,9 +203,9 @@ class Batch
     /**
      * @return callable
      */
-    public function getJobExecutor()
+    public function getCallback()
     {
-        return $this->jobExecutor;
+        return $this->callback;
     }
 
     /**

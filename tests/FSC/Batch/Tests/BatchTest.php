@@ -34,7 +34,7 @@ class BatchTest extends \PHPUnit_Framework_TestCase
      */
     public function testRun($loops, $batchSize, $expectedGetJobsContextsCallsCount, $expectedExecutorCallsCount)
     {
-        $executorCallsCount = 0;
+        $callbackCallsCount = 0;
 
         $adapterMock = $this->getMock('Pagerfanta\Adapter\AdapterInterface', array('getNbResults', 'getSlice'));
         $adapterMock->expects($this->exactly(1))
@@ -52,7 +52,7 @@ class BatchTest extends \PHPUnit_Framework_TestCase
 
         $batch->run($batchSize);
 
-        $this->assertEquals($expectedExecutorCallsCount, $executorCallsCount);
+        $this->assertEquals($expectedExecutorCallsCount, $callbackCallsCount);
     }
 
     public function getTestRunData()
@@ -72,8 +72,8 @@ class BatchTest extends \PHPUnit_Framework_TestCase
         return $this->getMock('Pagerfanta\Adapter\AdapterInterface');
     }
 
-    protected function createBatch($adapter, $jobExecutor)
+    protected function createBatch($adapter, $callback)
     {
-        return new Batch($adapter, $jobExecutor);
+        return new Batch($adapter, $callback);
     }
 }
