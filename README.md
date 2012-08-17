@@ -4,6 +4,22 @@
 
 PHP 5.3 library to help you run huge batch.
 
+It's as simple as creating a Batch instance with the following parameters:
+
+* A PagerfantaAdapterInterface (doctrine orm, propel, array, solarium etc... available) of the data you want to process
+* A callable, that will be called for each one of your "rows"
+
+Features:
+
+* Displays progress, elapsed time and estimated remaining time at the end of each batch.
+* Provides a doctrine batch class, that at the end of each batch:
+  * flush() the object manager, to save everything at the same time (may improve performance in some cases)
+  * clear() the object manager, to avoid memory leaks
+* Add a PagerfantaAdapter for doctrine ORM, that traverse the table using range queries on the id instead of LIMIT/OFFSET.
+  LIMIT/OFFSET degrades query time as the OFFSET grows, wheareas range queries time stay consistent.
+
+**Be aware that this library is a WIP, and requires more tests.**
+
 ## Examples
 
 ### Simple batch
