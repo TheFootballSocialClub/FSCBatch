@@ -60,7 +60,7 @@ use FSC\Batch\DoctrineBatch;
 
 class UserIndexSolrCommand extends BatchCommand
 {
-    protected function getBatch()
+    protected function createBatch()
     {
         $em = $this->getContainer()->get('doctrine')->getEntityManager();
         $qb = $em->getRepository('User')->createQueryBuilder('u');

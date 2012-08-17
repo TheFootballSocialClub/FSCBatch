@@ -18,7 +18,7 @@ abstract class BatchCommand extends ContainerAwareCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $batch = $this->getBatch();
+        $batch = $this->createBatch();
 
         $batch->run($input->getOption('batch-size'), $output);
     }
@@ -26,5 +26,5 @@ abstract class BatchCommand extends ContainerAwareCommand
     /**
      * @return Batch
      */
-    abstract protected function getBatch();
+    abstract protected function createBatch();
 }
