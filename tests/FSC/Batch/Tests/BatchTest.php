@@ -11,7 +11,7 @@ class BatchTest extends \PHPUnit_Framework_TestCase
      */
     public function testWithWrongExecutor()
     {
-        $this->createBatch($this->createJobProviderInterfaceMock(), null);
+        $this->createBatch($this->createAdapterInterfaceMock(), null);
     }
 
     /**
@@ -19,12 +19,12 @@ class BatchTest extends \PHPUnit_Framework_TestCase
      */
     public function testWithJobProvider()
     {
-        $jobProviderMock = $this->createJobProviderInterfaceMock();
-        $jobProviderMock->expects($this->any())
+        $adapterMock = $this->createAdapterInterfaceMock();
+        $adapterMock->expects($this->any())
             ->method('getJobsCount')
             ->will($this->returnValue(null));
 
-        $batch = $this->createBatch($jobProviderMock, function () {});
+        $batch = $this->createBatch($adapterMock, function () {});
 
         $batch->run();
     }
@@ -36,17 +36,17 @@ class BatchTest extends \PHPUnit_Framework_TestCase
     {
         $executorCallsCount = 0;
 
-        $jobProviderMock = $this->getMock('FSC\Batch\JobProvider\JobProviderInterface', array('getJobsCount', 'getJobsContexts'));
-        $jobProviderMock->expects($this->exactly(1))
-            ->method('getJobsCount')
+        $adapterMock = $this->getMock('Pagerfanta\Adapter\AdapterInterface', array('getNbResults', 'getSlice'));
+        $adapterMock->expects($this->exactly(1))
+            ->method('getNbResults')
             ->will($this->returnValue($loops));
-        $jobProviderMock->expects($this->exactly($expectedGetJobsContextsCallsCount))
-            ->method('getJobsContexts')
+        $adapterMock->expects($this->exactly($expectedGetJobsContextsCallsCount))
+            ->method('getSlice')
             ->will($this->returnCallback(function($offset, $limit) {
                 return array_fill(0, $limit, array());
             }));
 
-        $batch = $this->createBatch($jobProviderMock, function () use (&$executorCallsCount) {
+        $batch = $this->createBatch($adapterMock, function () use (&$executorCallsCount) {
             $executorCallsCount++;
         });
 
@@ -67,13 +67,13 @@ class BatchTest extends \PHPUnit_Framework_TestCase
         );
     }
 
-    protected function createJobProviderInterfaceMock()
+    protected function createAdapterInterfaceMock()
     {
-        return $this->getMock('FSC\Batch\JobProvider\JobProviderInterface');
+        return $this->getMock('Pagerfanta\Adapter\AdapterInterface');
     }
 
-    protected function createBatch($jobProvider, $jobExecutor)
+    protected function createBatch($adapter, $jobExecutor)
     {
-        return new Batch($jobProvider, $jobExecutor);
+        return new Batch($adapter, $jobExecutor);
     }
 }

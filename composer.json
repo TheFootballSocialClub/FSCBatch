@@ -13,11 +13,20 @@
     ],
     "require": {
         "php": ">=5.3",
+        "pagerfanta/pagerfanta": "dev-master"
+    },
+    "require-dev": {
+        "symfony/framework-bundle": "2.*",
+        "symfony/console": "2.*"
+    },
+    "suggest": {
+        "symfony/framework-bundle": "2.*",
         "symfony/console": "2.*"
     },
     "autoload": {
         "psr-0": {
-            "FSC\\Batch": "src/"
+            "FSC\\Batch": "src/",
+            "FSC\\Batch\\Tests": "tests/"
         }
     },
     "minimum-stability": "dev"

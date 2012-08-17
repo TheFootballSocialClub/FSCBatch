@@ -4,14 +4,14 @@ namespace FSC\Batch;
 
 use Symfony\Component\Console\Output\OutputInterface;
 
-use FSC\Batch\JobProvider\JobProviderInterface;
+use Pagerfanta\Adapter\AdapterInterface;
 
 class Batch
 {
     /**
-     * @var JobProviderInterface
+     * @var AdapterInterface
      */
-    protected $jobProvider;
+    protected $adapter;
 
     /**
      * @var callable
@@ -46,13 +46,13 @@ class Batch
      */
     protected $output;
 
-    public function __construct(JobProviderInterface $jobProvider, $batch)
+    public function __construct(AdapterInterface $adapter, $batch)
     {
         if (!is_callable($batch)) {
             throw new \InvalidArgumentException('The batch should be a php callable.');
         }
 
-        $this->jobProvider = $jobProvider;
+        $this->adapter = $adapter;
         $this->jobExecutor = $batch;
     }
 
@@ -64,7 +64,7 @@ class Batch
             $this->onBatchStart();
 
             $limit = min($batchSize, $this->getRemainingJobsCount());
-            $contexts = $this->jobProvider->getJobsContexts($this->currentJobOffset, $limit);
+            $contexts = $this->adapter->getSlice($this->currentJobOffset, $limit);
             $contextsCount = count($contexts);
 
             if ($contextsCount > $batchSize) {
@@ -99,7 +99,7 @@ class Batch
         $this->currentJobOffset = 0;
         $this->runStartTime = microtime(true);
 
-        $jobsCount = $this->jobProvider->getJobsCount();
+        $jobsCount = $this->adapter->getNbResults();
 
         if (!is_int($jobsCount) || 0 > $jobsCount) {
             throw new \RuntimeException(sprintf('The JobProvider getJobsCount() method should return an integer >= 0. (got "%s")', $jobsCount));
@@ -205,11 +205,11 @@ class Batch
     }
 
     /**
-     * @return JobProviderInterface
+     * @return AdapterInterface
      */
-    public function getJobProvider()
+    public function getAdapter()
     {
-        return $this->jobProvider;
+        return $this->adapter;
     }
 
     /**
