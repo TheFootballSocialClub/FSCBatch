@@ -15,24 +15,9 @@ class BatchTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException RuntimeException
-     */
-    public function testWithJobProvider()
-    {
-        $adapterMock = $this->createAdapterInterfaceMock();
-        $adapterMock->expects($this->any())
-            ->method('getJobsCount')
-            ->will($this->returnValue(null));
-
-        $batch = $this->createBatch($adapterMock, function () {});
-
-        $batch->run();
-    }
-
-    /**
      * @dataProvider getTestRunData
      */
-    public function testRun($loops, $batchSize, $expectedGetJobsContextsCallsCount, $expectedExecutorCallsCount)
+    public function testRun($loops, $batchSize, $expectedGetSliceCallsCount, $expectedCallbackCallsCount)
     {
         $callbackCallsCount = 0;
 
@@ -40,19 +25,19 @@ class BatchTest extends \PHPUnit_Framework_TestCase
         $adapterMock->expects($this->exactly(1))
             ->method('getNbResults')
             ->will($this->returnValue($loops));
-        $adapterMock->expects($this->exactly($expectedGetJobsContextsCallsCount))
+        $adapterMock->expects($this->exactly($expectedGetSliceCallsCount))
             ->method('getSlice')
             ->will($this->returnCallback(function($offset, $limit) {
                 return array_fill(0, $limit, array());
             }));
 
-        $batch = $this->createBatch($adapterMock, function () use (&$executorCallsCount) {
-            $executorCallsCount++;
+        $batch = $this->createBatch($adapterMock, function () use (&$callbackCallsCount) {
+            $callbackCallsCount++;
         });
 
         $batch->run($batchSize);
 
-        $this->assertEquals($expectedExecutorCallsCount, $callbackCallsCount);
+        $this->assertEquals($expectedCallbackCallsCount, $callbackCallsCount);
     }
 
     public function getTestRunData()
