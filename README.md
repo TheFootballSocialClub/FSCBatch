@@ -71,8 +71,8 @@ We also use a custom PagerfantaAdapter: `DoctrineBatchAdapter`, that uses range 
 <?php
 
 use FSC\Batch\Command\BatchCommand;
-use FSC\Batch\Adapter\DoctrineBatchAdapter;
 use FSC\Batch\DoctrineBatch;
+use Pagerfanta\Adapter\DoctrineORMAdapter;
 
 class UserIndexSolrCommand extends BatchCommand
 {
@@ -81,7 +81,7 @@ class UserIndexSolrCommand extends BatchCommand
         $em = $this->getContainer()->get('doctrine')->getEntityManager();
         $qb = $em->getRepository('User')->createQueryBuilder('u');
 
-        return new DoctrineBatch($em, new DoctrineBatchAdapter($qb), array($this, 'indexUser'));
+        return new DoctrineBatch($em, new DoctrineORMAdapter($qb), array($this, 'indexUser'));
     }
 
     public function indexUser($user)
