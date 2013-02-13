@@ -11,10 +11,12 @@ It's as simple as creating a Batch instance with the following parameters:
 
 Features:
 
-* Displays progress, elapsed time and estimated remaining time at the end of each batch.
-* Provides a doctrine batch class, that at the end of each batch:
-  * flush() the object manager, to save everything at the same time (may improve performance in some cases)
-  * clear() the object manager, to avoid memory leaks
+* Evented system using the symfony2 event dispatcher
+  Included listeners:
+  * ProgressEventListener: Displays progress, elapsed time and estimated remaining time at the end of each batch.
+  * DoctrineEventListener: at the end of each batch:
+    * flush() the object manager, to save everything at the same time (may improve performance in some cases)
+    * clear() the object manager, to avoid memory leaks
 * Add a PagerfantaAdapter for doctrine ORM, that traverse the table using range queries on the id instead of LIMIT/OFFSET.
   LIMIT/OFFSET degrades query time as the OFFSET grows, wheareas range queries time stay consistent.
 
@@ -27,7 +29,11 @@ Features:
 ```php
 <?php
 
+require_once __DIR__.'/../vendor/autoload.php';
+
 use FSC\Batch\Batch;
+use FSC\Batch\Event\ExecuteEvent;
+use FSC\Batch\EventListener\ProgressEventListener;
 use Pagerfanta\Adapter\ArrayAdapter;
 use Symfony\Component\Console\Output\ConsoleOutput;
 
@@ -36,15 +42,16 @@ $output = new ConsoleOutput();
 $passwords = range(1, 100);
 $hashes = array();
 
-$batch = new Batch(new ArrayAdapter($passwords), function ($context) use (&$hashes) {
-    $hashes[] = crypt($context, '$2a$10$');
+$batch = new Batch(new ArrayAdapter($passwords), function (ExecuteEvent $event) use (&$hashes) {
+    $hashes[] = crypt($event->getContext(), '$2a$10$');
 });
+$batch->getEventDispatcher()->addSubscriber(new ProgressEventListener($output));
 
 $batch->run(10, $output);
+
 ```
 
 Would output
-
 
 ```
 $ php examples/array_closure.php
@@ -64,14 +71,15 @@ Batch run end. took 0.82 sec [Mem: 0.79 MB]
 
 ### Doctrine ORM Batch in a symfony command
 
-This example uses the DoctrineBatch, which flush (save everything) and clears the objectManager (avoid memory problems) at the end of each batch.
+This example uses the DoctrineEventListener, which flush (save everything) and clears the objectManager (avoid memory problems) at the end of each batch.
 We also use a custom PagerfantaAdapter: `DoctrineBatchAdapter`, that uses range queries (id > 100 AND id < 200) instead of LIMIT/OFFSET to avoid increasing query time as the OFFSET grows.
 
 ```php
 <?php
 
+use FSC\Batch\Batch;
 use FSC\Batch\Command\BatchCommand;
-use FSC\Batch\DoctrineBatch;
+use FSC\Batch\EventListener\DoctrineEventListener;
 use Pagerfanta\Adapter\DoctrineORMAdapter;
 
 class UserIndexSolrCommand extends BatchCommand
@@ -81,11 +89,15 @@ class UserIndexSolrCommand extends BatchCommand
         $em = $this->getContainer()->get('doctrine')->getEntityManager();
         $qb = $em->getRepository('User')->createQueryBuilder('u');
 
-        return new DoctrineBatch($em, new DoctrineORMAdapter($qb), array($this, 'indexUser'));
+        $batch = new Batch(new DoctrineORMAdapter($qb), array($this, 'indexUser'));
+        $batch->getEventDispatcher()->addSubscriber(new DoctrineEventListener($em));
+
+        return $batch;
     }
 
-    public function indexUser($user)
+    public function indexUser(Event $event)
     {
+        $user = $event->getContext();
         // Index this user!
     }
 }
