@@ -7,14 +7,6 @@ use FSC\Batch\Batch;
 class BatchTest extends \PHPUnit_Framework_TestCase
 {
     /**
-     * @expectedException InvalidArgumentException
-     */
-    public function testWithWrongExecutor()
-    {
-        $this->createBatch($this->createAdapterInterfaceMock(), null);
-    }
-
-    /**
      * @dataProvider getTestRunData
      */
     public function testRun($loops, $batchSize, $expectedGetSliceCallsCount, $expectedCallbackCallsCount)
