@@ -1,6 +1,6 @@
 <?php
 
-namespace FSC\Batch;
+namespace FSC\Batch\Event;
 
 use Symfony\Component\EventDispatcher\Event as BaseEvent;
 use Symfony\Component\Console\Output\OutputInterface;

@@ -3,7 +3,8 @@
 namespace FSC\Batch;
 
 use Symfony\Component\Console\Output\OutputInterface;
-
+use FSC\Batch\Event\Event;
+use FSC\Batch\Event\ExecuteEvent;
 use Pagerfanta\Adapter\AdapterInterface;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -15,6 +16,7 @@ class Batch implements EventSubscriberInterface
 {
     const EVENT_RUN_START = 'run.start';
     const EVENT_BATCH_START = 'batch.start';
+    const EVENT_EXECUTE = 'execute';
     const EVENT_BATCH_END = 'batch.end';
     const EVENT_RUN_END = 'run.end';
 
@@ -23,12 +25,10 @@ class Batch implements EventSubscriberInterface
      */
     protected $adapter;
 
-    protected $eventDispatcher;
-
     /**
-     * @var callable
+     * @var EventDispatcher
      */
-    protected $callback;
+    protected $eventDispatcher;
 
     /**
      * @var int
@@ -60,16 +60,12 @@ class Batch implements EventSubscriberInterface
 
     public function __construct(AdapterInterface $adapter, $callback, $defaultBatchSize = 50)
     {
-        if (!is_callable($callback)) {
-            throw new \InvalidArgumentException('The callback should be a php callable.');
-        }
-
         $this->adapter = $adapter;
         $this->eventDispatcher = new EventDispatcher();
-        $this->callback = $callback;
         $this->defaultBatchSize = $defaultBatchSize;
 
         $this->eventDispatcher->addSubscriber($this);
+        $this->eventDispatcher->addListener(static::EVENT_EXECUTE, $callback);
     }
 
     /**
@@ -101,7 +97,7 @@ class Batch implements EventSubscriberInterface
 
             if (is_array($contexts) || $contexts instanceof \Traversable) {
                 foreach ($contexts as $context) {
-                    call_user_func($this->callback, $context);
+                    $this->eventDispatcher->dispatch(static::EVENT_EXECUTE, new ExecuteEvent($context, $output));
 
                     $this->currentJobOffset++;
                 }
@@ -232,14 +228,6 @@ class Batch implements EventSubscriberInterface
         }
 
         return substr($str, 0, -2);
-    }
-
-    /**
-     * @return callable
-     */
-    public function getCallback()
-    {
-        return $this->callback;
     }
 
     /**
