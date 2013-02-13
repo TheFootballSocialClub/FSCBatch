@@ -4,23 +4,38 @@
 
 PHP 5.3 library to help you run huge batch.
 
-It's as simple as creating a Batch instance with the following parameters:
+It takes a PagerfantaAdapterInterface (doctrine orm, propel, array, solarium etc... available) as a data source,
+will get data in slice of the size of the batch size, and will then process each context in batch by calling the
+callback you provided.
 
-* A PagerfantaAdapterInterface (doctrine orm, propel, array, solarium etc... available) of the data you want to process
-* A callable, that will be called for each one of your "rows"
+```php
+<?php
+
+use FSC\Batch\Batch;
+use FSC\Batch\Event\ExecuteEvent;
+
+$usersAdapter = ...;
+$solrIndex = ...;
+
+$batch = new Batch($usersAdapter, function (ExecuteEvent $event) use ($solrIndexer) {
+    $solrIndexer->indexUser($event->getContext());
+});
+$batch->run(10); // Execute in batch of 10
+```
 
 Features:
 
 * Evented system using the symfony2 event dispatcher, to easily be able to add behaviors
-* Add a PagerfantaAdapter for doctrine ORM, that traverse the table using range queries on the id instead of LIMIT/OFFSET.
-  LIMIT/OFFSET degrades query time as the OFFSET grows, wheareas range queries time stay consistent.
-
 
 Included listeners:
 * ProgressEventListener: Displays progress, elapsed time and estimated remaining time at the end of each batch.
 * DoctrineEventListener: at the end of each batch:
   * flush() the object manager, to save everything at the same time (may improve performance in some cases)
   * clear() the object manager, to avoid memory leaks
+
+Extra:
+* Add a `PagerfantaAdapter` for doctrine ORM, that traverse the table using range queries on the id instead of LIMIT/OFFSET.
+  LIMIT/OFFSET degrades query time as the OFFSET grows, wheareas range queries time stay consistent.
 
 **Be aware that this library is a WIP, and requires more tests.**
 
