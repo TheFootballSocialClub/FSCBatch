@@ -86,7 +86,7 @@ class ProgressEventListener implements EventSubscriberInterface
         $mem = memory_get_usage(true) / 1000000;
 
         $countLength = strlen((string) $event->getBatch()->getJobsCount());
-        $this->output->writeln(sprintf('[%'.$countLength.'d/%'.$countLength.'d] [%6.2f %%] ([? %s] - [Elapsed %8s] - [Remaining %8s]) [Mem: %5.2f MB]',
+        $this->output->writeln(sprintf('[%'.$countLength.'d/%'.$countLength.'d] [%6.2f %%] ([Δ %s] - [Elapsed %8s] - [Remaining %8s]) [Mem: %5.2f MB]',
             $event->getBatch()->getCurrentJobOffset(),
             $event->getBatch()->getJobsCount(),
             $progress * 100,
