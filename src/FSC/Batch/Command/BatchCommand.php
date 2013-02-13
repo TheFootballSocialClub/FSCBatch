@@ -2,6 +2,7 @@
 
 namespace FSC\Batch\Command;
 
+use FSC\Batch\EventListener\ProgressEventListener;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputInterface;
@@ -19,8 +20,9 @@ abstract class BatchCommand extends ContainerAwareCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $batch = $this->createBatch();
+        $batch->getEventDispatcher()->addSubscriber(new ProgressEventListener($output));
 
-        $batch->run($input->getOption('batch-size'), $output);
+        $batch->run($input->getOption('batch-size'));
     }
 
     /**
