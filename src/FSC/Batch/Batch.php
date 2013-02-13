@@ -58,11 +58,6 @@ class Batch implements EventSubscriberInterface
      */
     protected $lastBatchDuration;
 
-    /**
-     * @var OutputInterface
-     */
-    protected $output;
-
     public function __construct(AdapterInterface $adapter, $callback, $defaultBatchSize = 50)
     {
         if (!is_callable($callback)) {
@@ -92,15 +87,14 @@ class Batch implements EventSubscriberInterface
 
     public function run($batchSize = null, OutputInterface $output = null)
     {
-        $this->eventDispatcher->dispatch(static::EVENT_RUN_START);
+        $this->eventDispatcher->dispatch(static::EVENT_RUN_START, new Event($output));
 
         if (null === $batchSize) {
             $batchSize = $this->defaultBatchSize;
         }
-        $this->output = $output;
 
         while ($this->currentJobOffset < $this->jobsCount) {
-            $this->eventDispatcher->dispatch(static::EVENT_BATCH_START);
+            $this->eventDispatcher->dispatch(static::EVENT_BATCH_START, new Event($output));
 
             $limit = min($batchSize, $this->getRemainingJobsCount());
             $contexts = $this->adapter->getSlice($this->currentJobOffset, $limit);
@@ -116,10 +110,10 @@ class Batch implements EventSubscriberInterface
                 $this->currentJobOffset = $this->jobsCount;
             }
 
-            $this->eventDispatcher->dispatch(static::EVENT_BATCH_START);
+            $this->eventDispatcher->dispatch(static::EVENT_BATCH_START, new Event($output));
         }
 
-        $this->eventDispatcher->dispatch(static::EVENT_RUN_END);
+        $this->eventDispatcher->dispatch(static::EVENT_RUN_END, new Event($output));
     }
 
     public function getEventDispatcher()
@@ -127,7 +121,7 @@ class Batch implements EventSubscriberInterface
         return $this->eventDispatcher;
     }
 
-    public function onRunStart()
+    public function onRunStart(Event $event)
     {
         $this->currentJobOffset = 0;
         $this->runStartTime = microtime(true);
@@ -140,25 +134,25 @@ class Batch implements EventSubscriberInterface
 
         $this->jobsCount = $jobsCount;
 
-        if (null !== $this->output) {
+        if (null !== $event->getOutput()) {
             $mem = memory_get_usage(true) / 1000000;
 
-            $this->output->writeln(sprintf('Batch run start. %s jobs [Mem: %.2f MB]',
+            $event->getOutput()->writeln(sprintf('Batch run start. %s jobs [Mem: %.2f MB]',
                 $this->jobsCount,
                 $mem
             ));
         }
     }
 
-    public function onBatchStart()
+    public function onBatchStart(Event $event)
     {
         $this->currentBatchStartTime = microtime(true);
         $this->currentBatchStartDateTime = new \DateTime();
     }
 
-    public function onBatchEnd()
+    public function onBatchEnd(Event $event)
     {
-        if (null !== $this->output) {
+        if (null !== $event->getOutput()) {
             $time = microtime(true);
             $totalTime = $time - $this->runStartTime;
             $delta = $time - $this->currentBatchStartTime;
@@ -170,7 +164,7 @@ class Batch implements EventSubscriberInterface
             $mem = memory_get_usage(true) / 1000000;
 
             $countLength = strlen((string) $this->jobsCount);
-            $this->output->writeln(sprintf('[%'.$countLength.'d/%'.$countLength.'d] [%6.2f %%] ([Δ %s] - [Elapsed %8s] - [Remaining %8s]) [Mem: %5.2f MB]',
+            $event->getOutput()->writeln(sprintf('[%'.$countLength.'d/%'.$countLength.'d] [%6.2f %%] ([Δ %s] - [Elapsed %8s] - [Remaining %8s]) [Mem: %5.2f MB]',
                 $this->currentJobOffset,
                 $this->jobsCount,
                 $progress * 100,
@@ -182,12 +176,12 @@ class Batch implements EventSubscriberInterface
         }
     }
 
-    public function onRunEnd()
+    public function onRunEnd(Event $event)
     {
-        if (null !== $this->output) {
+        if (null !== $event->getOutput()) {
             $totalTime = microtime(true) - $this->currentBatchStartTime;
 
-            $this->output->writeln(sprintf('Batch run end. took %s [Mem: %.2f MB]',
+            $event->getOutput()->writeln(sprintf('Batch run end. took %s [Mem: %.2f MB]',
                 $this->secondsToString($totalTime),
                 memory_get_usage(true) / 1000000
             ));
@@ -196,7 +190,6 @@ class Batch implements EventSubscriberInterface
         // Reset the state
         $this->jobsCount = null;
         $this->currentJobOffset = 0;
-        $this->output = null;
     }
 
     protected function getRemainingJobsCount()
