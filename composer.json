@@ -14,7 +14,8 @@
     "require": {
         "php": ">=5.3",
         "pagerfanta/pagerfanta": "dev-master",
-        "symfony/console": "2.*"
+        "symfony/console": "2.*",
+        "symfony/event-dispatcher": ">=2.1"
     },
     "autoload": {
         "psr-0": {
@@ -25,7 +26,7 @@
     "minimum-stability": "dev",
     "extra": {
         "branch-alias": {
-            "dev-master": "0.1-dev"
+            "dev-master": "0.2-dev"
         }
     }
 }

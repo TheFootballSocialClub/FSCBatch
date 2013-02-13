@@ -5,16 +5,25 @@ namespace FSC\Batch;
 use Symfony\Component\Console\Output\OutputInterface;
 
 use Pagerfanta\Adapter\AdapterInterface;
+use Symfony\Component\EventDispatcher\EventDispatcher;
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
  * @author Adrien Brault <adrien.brault@gmail.com>
  */
-class Batch
+class Batch implements EventSubscriberInterface
 {
+    const EVENT_RUN_START = 'run.start';
+    const EVENT_BATCH_START = 'batch.start';
+    const EVENT_BATCH_END = 'batch.end';
+    const EVENT_RUN_END = 'run.end';
+
     /**
      * @var AdapterInterface
      */
     protected $adapter;
+
+    protected $eventDispatcher;
 
     /**
      * @var callable
@@ -61,13 +70,29 @@ class Batch
         }
 
         $this->adapter = $adapter;
+        $this->eventDispatcher = new EventDispatcher();
         $this->callback = $callback;
         $this->defaultBatchSize = $defaultBatchSize;
+
+        $this->eventDispatcher->addSubscriber($this);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function getSubscribedEvents()
+    {
+        return array(
+            static::EVENT_RUN_START => 'onRunStart',
+            static::EVENT_BATCH_START => 'onBatchStart',
+            static::EVENT_BATCH_END => 'onBatchEnd',
+            static::EVENT_RUN_END => 'onRunEnd',
+        );
     }
 
     public function run($batchSize = null, OutputInterface $output = null)
     {
-        $this->onRunStart();
+        $this->eventDispatcher->dispatch(static::EVENT_RUN_START);
 
         if (null === $batchSize) {
             $batchSize = $this->defaultBatchSize;
@@ -75,7 +100,7 @@ class Batch
         $this->output = $output;
 
         while ($this->currentJobOffset < $this->jobsCount) {
-            $this->onBatchStart();
+            $this->eventDispatcher->dispatch(static::EVENT_BATCH_START);
 
             $limit = min($batchSize, $this->getRemainingJobsCount());
             $contexts = $this->adapter->getSlice($this->currentJobOffset, $limit);
@@ -91,13 +116,18 @@ class Batch
                 $this->currentJobOffset = $this->jobsCount;
             }
 
-            $this->onBatchEnd();
+            $this->eventDispatcher->dispatch(static::EVENT_BATCH_START);
         }
 
-        $this->onRunEnd();
+        $this->eventDispatcher->dispatch(static::EVENT_RUN_END);
     }
 
-    protected function onRunStart()
+    public function getEventDispatcher()
+    {
+        return $this->eventDispatcher;
+    }
+
+    public function onRunStart()
     {
         $this->currentJobOffset = 0;
         $this->runStartTime = microtime(true);
@@ -120,13 +150,13 @@ class Batch
         }
     }
 
-    protected function onBatchStart()
+    public function onBatchStart()
     {
         $this->currentBatchStartTime = microtime(true);
         $this->currentBatchStartDateTime = new \DateTime();
     }
 
-    protected function onBatchEnd()
+    public function onBatchEnd()
     {
         if (null !== $this->output) {
             $time = microtime(true);
@@ -152,7 +182,7 @@ class Batch
         }
     }
 
-    protected function onRunEnd()
+    public function onRunEnd()
     {
         if (null !== $this->output) {
             $totalTime = microtime(true) - $this->currentBatchStartTime;
