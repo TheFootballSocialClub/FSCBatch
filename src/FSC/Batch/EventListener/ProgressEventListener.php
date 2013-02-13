@@ -18,10 +18,10 @@ class ProgressEventListener implements EventSubscriberInterface
     public static function getSubscribedEvents()
     {
         return array(
-            Batch::EVENT_RUN_START => 'onRunStart',
-            Batch::EVENT_BATCH_START => 'onBatchStart',
-            Batch::EVENT_BATCH_END => 'onBatchEnd',
-            Batch::EVENT_RUN_END => 'onRunEnd',
+            Batch::EVENT_RUN_START => array('onRunStart', 255),
+            Batch::EVENT_BATCH_START => array('onBatchStart', 255),
+            Batch::EVENT_BATCH_END => array('onBatchEnd', -255),
+            Batch::EVENT_RUN_END => array('onRunEnd', -255),
         );
     }
 
