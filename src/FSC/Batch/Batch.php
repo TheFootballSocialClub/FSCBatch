@@ -57,7 +57,6 @@ class Batch
         $batchSize = $batchSize ?: $this->defaultBatchSize;
 
         $this->currentJobOffset = 0;
-
         $this->jobsCount = $this->adapter->getNbResults();
 
         if (!is_int($this->jobsCount) || 0 > $this->jobsCount) {
