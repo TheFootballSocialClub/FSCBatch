@@ -16,14 +16,6 @@
         "pagerfanta/pagerfanta": "dev-master",
         "symfony/console": "2.*"
     },
-    "require-dev": {
-        "symfony/framework-bundle": "2.*",
-        "doctrine/orm": ">=2.2"
-    },
-    "suggest": {
-        "symfony/framework-bundle": "2.*",
-        "doctrine/orm": ">=2.2"
-    },
     "autoload": {
         "psr-0": {
             "FSC\\Batch": "src/",
