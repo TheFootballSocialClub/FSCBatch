@@ -73,7 +73,7 @@ class Batch
 
             if (is_array($contexts) || $contexts instanceof \Traversable) {
                 foreach ($contexts as $context) {
-                    $this->eventDispatcher->dispatch(static::EVENT_EXECUTE, new ExecuteEvent($context, $this));
+                    $this->eventDispatcher->dispatch(static::EVENT_EXECUTE, new ExecuteEvent($this, $context));
 
                     $this->currentJobOffset++;
                 }

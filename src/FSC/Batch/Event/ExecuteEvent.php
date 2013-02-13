@@ -14,11 +14,11 @@ class ExecuteEvent extends Event
      */
     private $context;
 
-    public function __construct($context, Batch $batch)
+    public function __construct(Batch $batch, $context)
     {
-        $this->context = $context;
-
         parent::__construct($batch);
+
+        $this->context = $context;
     }
 
     public function getContext()
