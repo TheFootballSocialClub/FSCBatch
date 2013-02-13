@@ -2,8 +2,11 @@
 
 namespace FSC\Batch\Event;
 
-use Symfony\Component\Console\Output\OutputInterface;
+use FSC\Batch\Batch;
 
+/**
+ * @author Adrien Brault <adrien.brault@gmail.com>
+ */
 class ExecuteEvent extends Event
 {
     /**
@@ -11,11 +14,11 @@ class ExecuteEvent extends Event
      */
     private $context;
 
-    public function __construct($context, OutputInterface $output = null)
+    public function __construct($context, Batch $batch)
     {
         $this->context = $context;
 
-        parent::__construct($output);
+        parent::__construct($batch);
     }
 
     public function getContext()

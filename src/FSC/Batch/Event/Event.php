@@ -2,23 +2,26 @@
 
 namespace FSC\Batch\Event;
 
+use FSC\Batch\Batch;
 use Symfony\Component\EventDispatcher\Event as BaseEvent;
-use Symfony\Component\Console\Output\OutputInterface;
 
+/**
+ * @author Adrien Brault <adrien.brault@gmail.com>
+ */
 class Event extends BaseEvent
 {
     /**
-     * @var OutputInterface|null
+     * @var Batch
      */
-    private $output;
+    private $batch;
 
-    public function __construct(OutputInterface $output = null)
+    public function __construct(Batch $batch)
     {
-        $this->output = $output;
+        $this->batch = $batch;
     }
 
-    public function getOutput()
+    public function getBatch()
     {
-        return $this->output;
+        return $this->batch;
     }
 }
