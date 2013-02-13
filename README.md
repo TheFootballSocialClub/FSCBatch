@@ -4,10 +4,24 @@
 
 PHP 5.3 library to help you run huge batch.
 
-It's as simple as creating a Batch instance with the following parameters:
+It takes a PagerfantaAdapterInterface (doctrine orm, propel, array, solarium etc... available) as a data source,
+will get data in slice of the size of the batch size, and will then process each context in batch by calling the
+callback you provided.
 
-* A PagerfantaAdapterInterface (doctrine orm, propel, array, solarium etc... available) of the data you want to process
-* A callable, that will be called for each one of your "rows"
+```php
+<?php
+
+use FSC\Batch\Batch;
+use FSC\Batch\Event\ExecuteEvent;
+
+$usersAdapter = ...;
+$solrIndex = ...;
+
+$batch = new Batch($usersAdapter, function (ExecuteEvent $event) use ($solrIndexer) {
+    $solrIndexer->indexUser($event->getContext());
+});
+$batch->run(10); // Execute in batch of 10
+```
 
 Features:
 
