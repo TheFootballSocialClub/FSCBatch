@@ -29,7 +29,7 @@ class DoctrineBatchAdapter implements AdapterInterface
      */
     public function getNbResults()
     {
-        $qb = clone $this->queryBuilder;
+        $qb = $this->cloneQueryBuilder($this->queryBuilder);
 
         $qb->select($qb->expr()->count($qb->getRootAlias()));
         $qb->setFirstResult(null);
@@ -48,14 +48,14 @@ class DoctrineBatchAdapter implements AdapterInterface
         }
 
         if (null === $this->lastId) {
-            $this->lastId = $this->getMinId();
+            $this->lastId = $this->getMinId() + $offset;
         }
 
         if (($offset + $length) > $this->maxId) {
             return null; // Will end the batch
         }
 
-        $qb = $this->queryBuilder;
+        $qb = $this->cloneQueryBuilder($this->queryBuilder);
         $qb ->andWhere($qb->expr()->gte(sprintf('%s.%s', $qb->getRootAlias(), $this->identifierField), ':entity_id'))
             ->setParameter('entity_id', $this->lastId);
         $qb->setMaxResults($length);
@@ -75,23 +75,32 @@ class DoctrineBatchAdapter implements AdapterInterface
 
     protected function getMaxId()
     {
-        $qb = clone $this->queryBuilder;
+        $qb = $this->cloneQueryBuilder($this->queryBuilder);
 
         $qb->select($qb->expr()->max(sprintf('%s.%s', $qb->getRootAlias(), $this->identifierField)));
-        $qb->setFirstResult(null);
-        $qb->setMaxResults(null);
 
         return $qb->getQuery()->getSingleScalarResult();
     }
 
     protected function getMinId()
     {
-        $qb = clone $this->queryBuilder;
+        $qb = $this->cloneQueryBuilder($this->queryBuilder);
 
         $qb->select($qb->expr()->min(sprintf('%s.%s', $qb->getRootAlias(), $this->identifierField)));
-        $qb->setFirstResult(null);
-        $qb->setMaxResults(null);
 
         return $qb->getQuery()->getSingleScalarResult();
+    }
+
+    private function cloneQueryBuilder(QueryBuilder $qb)
+    {
+        $cloneQb = clone $qb;
+        $cloneQb->setFirstResult(null);
+        $cloneQb->setMaxResults(null);
+        $cloneQb->setParameters($qb->getParameters());
+        foreach ($qb->getHints() as $name => $value) {
+            $cloneQb->setHint($name, $value);
+        }
+
+        return $cloneQb;
     }
 }
