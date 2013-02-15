@@ -13,11 +13,11 @@
     ],
     "require": {
         "php": ">=5.3",
-        "pagerfanta/pagerfanta": "dev-master",
-        "symfony/event-dispatcher": ">=2.1"
+        "pagerfanta/pagerfanta": "1.0.*",
+        "symfony/event-dispatcher": "~2.1"
     },
     "require-dev": {
-        "doctrine/common": ">=2.2",
+        "doctrine/common": "~2.2",
         "symfony/console": "2.*"
     },
     "autoload": {
@@ -29,7 +29,7 @@
     "minimum-stability": "dev",
     "extra": {
         "branch-alias": {
-            "dev-master": "0.2-dev"
+            "dev-master": "0.2.x-dev"
         }
     }
 }
