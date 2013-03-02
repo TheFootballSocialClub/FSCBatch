@@ -2,8 +2,9 @@
 
 namespace FSC\Batch;
 
+use FSC\Batch\Event\ContextsEvent;
 use FSC\Batch\Event\Event;
-use FSC\Batch\Event\ExecuteEvent;
+use FSC\Batch\Event\ContextEvent;
 use Pagerfanta\Adapter\AdapterInterface;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 
@@ -43,13 +44,15 @@ class Batch
      */
     protected $currentJobOffset;
 
-    public function __construct(AdapterInterface $adapter, $callback, $defaultBatchSize = 50)
+    public function __construct(AdapterInterface $adapter, $callback = null, $defaultBatchSize = 50)
     {
         $this->adapter = $adapter;
         $this->eventDispatcher = new EventDispatcher();
         $this->defaultBatchSize = $defaultBatchSize;
 
-        $this->eventDispatcher->addListener(static::EVENT_EXECUTE, $callback);
+        if (null != $callback) {
+            $this->eventDispatcher->addListener(static::EVENT_EXECUTE, $callback);
+        }
     }
 
     public function run($batchSize = null)
@@ -73,7 +76,7 @@ class Batch
 
             if (is_array($contexts) || $contexts instanceof \Traversable) {
                 foreach ($contexts as $context) {
-                    $this->eventDispatcher->dispatch(static::EVENT_EXECUTE, new ExecuteEvent($this, $context));
+                    $this->eventDispatcher->dispatch(static::EVENT_EXECUTE, new ContextEvent($this, $context));
 
                     $this->currentJobOffset++;
                 }
@@ -82,7 +85,7 @@ class Batch
                 $this->currentJobOffset = $this->jobsCount;
             }
 
-            $this->eventDispatcher->dispatch(static::EVENT_BATCH_END, new Event($this));
+            $this->eventDispatcher->dispatch(static::EVENT_BATCH_END, new ContextsEvent($this, $contexts));
         }
 
         // Reset the state

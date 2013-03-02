@@ -7,18 +7,18 @@ use FSC\Batch\Batch;
 /**
  * @author Adrien Brault <adrien.brault@gmail.com>
  */
-class ExecuteEvent extends Event
+class ContextEvent extends Event
 {
     /**
      * @var mixed
      */
     private $context;
 
-    public function __construct(Batch $batch, $context)
+    public function __construct(Batch $batch, $contexts)
     {
         parent::__construct($batch);
 
-        $this->context = $context;
+        $this->context = $contexts;
     }
 
     public function getContext()

@@ -94,7 +94,7 @@ We also use a custom PagerfantaAdapter: `DoctrineBatchAdapter`, that uses range 
 use FSC\Batch\Batch;
 use FSC\Batch\Command\BatchCommand;
 use FSC\Batch\EventListener\DoctrineEventListener;
-use FSC\Batch\Event\ExecuteEvent;
+use FSC\Batch\Event\ContextEvent;
 use Pagerfanta\Adapter\DoctrineORMAdapter;
 
 class UserIndexSolrCommand extends BatchCommand
@@ -110,7 +110,7 @@ class UserIndexSolrCommand extends BatchCommand
         return $batch;
     }
 
-    public function indexUser(ExecuteEvent $event)
+    public function indexUser(ContextEvent $event)
     {
         $user = $event->getContext();
         // Index this user!
